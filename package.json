@@ -1,0 +1,72 @@
+{
+  "name": "@neabyte/fuzzy-finder",
+  "version": "0.1.0",
+  "description": "High-performance fuzzy file search with intelligent ranking algorithm",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "unbuild --minify",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "rm -rf dist && npm run build"
+  },
+  "keywords": [
+    "algorithm",
+    "bit-mask",
+    "cli-tools",
+    "command-palette",
+    "deno",
+    "esm",
+    "file-search",
+    "fuzzy-matching",
+    "fuzzy-search",
+    "ide-tools",
+    "javascript-library",
+    "jsr",
+    "npm-package",
+    "open-source",
+    "performance",
+    "scoring-algorithm",
+    "search-engine",
+    "text-matching",
+    "typescript",
+    "zero-dependency"
+  ],
+  "dependencies": {},
+  "devDependencies": {
+    "unbuild": "^3.6.1"
+  },
+  "author": {
+    "name": "NeaByteLab",
+    "email": "me@neabyte.com",
+    "url": "https://github.com/NeaByteLab"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NeaByteLab/Fuzzy-Finder.git"
+  },
+  "bugs": {
+    "url": "https://github.com/NeaByteLab/Fuzzy-Finder/issues"
+  },
+  "homepage": "https://github.com/NeaByteLab/Fuzzy-Finder#readme",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}
