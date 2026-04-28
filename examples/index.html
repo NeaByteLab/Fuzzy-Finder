@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fuzzy Finder Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-black text-white min-h-screen p-8">
+    <div class="max-w-3xl mx-auto">
+      <h1 class="text-3xl font-bold mb-2 text-white">Fuzzy Finder Demo</h1>
+      <p class="text-neutral-500 mb-6">
+        Type to search through file paths. Matches are highlighted.
+      </p>
+      <div class="relative mb-6">
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="Search files... (e.g., 'idx' or 'utils')"
+          class="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-lg focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-lg placeholder:text-neutral-600"
+          autocomplete="off"
+        />
+        <div id="stats" class="absolute right-4 top-3.5 text-sm text-neutral-600"></div>
+      </div>
+      <div id="results" class="space-y-1"></div>
+    </div>
+    <script type="module">
+      import FuzzyFinder from '../dist/index.mjs'
+
+      // Demo Code
+      const sampleFiles = [
+        // Core source files
+        'src/index.ts',
+        'src/types.ts',
+        'src/constants.ts',
+        'src/scoring.ts',
+        'src/utils.ts',
+        'src/config.ts',
+        'src/errors.ts',
+        'src/helpers.ts',
+        'src/parser.ts',
+        'src/validator.ts',
+        // Core modules
+        'src/core/indexer.ts',
+        'src/core/loader.ts',
+        'src/core/searcher.ts',
+        'src/core/matcher.ts',
+        'src/core/filter.ts',
+        'src/core/sorter.ts',
+        'src/core/ranker.ts',
+        'src/core/cacher.ts',
+        // Components
+        'src/components/Button.tsx',
+        'src/components/Modal.tsx',
+        'src/components/Card.tsx',
+        'src/components/Input.tsx',
+        'src/components/Dropdown.tsx',
+        'src/components/Tooltip.tsx',
+        'src/components/Header.tsx',
+        'src/components/Footer.tsx',
+        'src/components/Sidebar.tsx',
+        // Hooks
+        'src/hooks/useState.ts',
+        'src/hooks/useEffect.ts',
+        'src/hooks/useCallback.ts',
+        'src/hooks/useMemo.ts',
+        'src/hooks/useRef.ts',
+        'src/hooks/useContext.ts',
+        // Utils
+        'src/utils/format.ts',
+        'src/utils/date.ts',
+        'src/utils/number.ts',
+        'src/utils/string.ts',
+        'src/utils/array.ts',
+        'src/utils/object.ts',
+        'src/utils/http.ts',
+        'src/utils/crypto.ts',
+        // Tests
+        'tests/index.test.ts',
+        'tests/scoring.test.ts',
+        'tests/utils.test.ts',
+        'tests/core/indexer.test.ts',
+        'tests/core/loader.test.ts',
+        'tests/core/searcher.test.ts',
+        'tests/components/Button.test.tsx',
+        'tests/hooks/useState.test.ts',
+        // Config & docs
+        'README.md',
+        'LICENSE',
+        'CHANGELOG.md',
+        'CONTRIBUTING.md',
+        'package.json',
+        'tsconfig.json',
+        'deno.json',
+        '.gitignore',
+        '.eslintrc.json',
+        // Build & CI
+        'build.config.ts',
+        'vite.config.ts',
+        'Dockerfile',
+        '.github/workflows/ci.yml'
+      ]
+      const index = new FuzzyFinder()
+      index.load(sampleFiles)
+      const searchInput = document.getElementById('searchInput')
+      const resultsContainer = document.getElementById('results')
+      const statsContainer = document.getElementById('stats')
+
+      /**
+       * Highlight matched characters.
+       * @description Wraps matched chars in styled spans.
+       * @param path - File path string
+       * @param positions - Indices of matched chars
+       * @returns HTML string with highlights
+       */
+      function highlightMatches(path, positions) {
+        if (!positions || positions.length === 0) {
+          return `<span class="text-neutral-400">${escapeHtml(path)}</span>`
+        }
+        let result = ''
+        let lastIndex = 0
+        for (const pos of positions) {
+          if (pos > lastIndex) {
+            result += `<span class="text-neutral-600">${
+              escapeHtml(
+                path.slice(lastIndex, pos)
+              )
+            }</span>`
+          }
+          result += `<span class="text-teal-400 font-bold">${escapeHtml(path[pos])}</span>`
+          lastIndex = pos + 1
+        }
+        if (lastIndex < path.length) {
+          result += `<span class="text-neutral-600">${escapeHtml(path.slice(lastIndex))}</span>`
+        }
+        return result
+      }
+
+      /**
+       * Escape HTML special characters.
+       * @description Converts text to safe HTML entities.
+       * @param text - Raw input string
+       * @returns Escaped safe HTML
+       */
+      function escapeHtml(text) {
+        const div = document.createElement('div')
+        div.textContent = text
+        return div.innerHTML
+      }
+
+      /**
+       * Render search results to DOM.
+       * @description Updates container with result items.
+       * @param results - Array of search matches
+       * @param query - Current search query
+       */
+      function renderResults(results, query) {
+        if (query.length === 0) {
+          resultsContainer.innerHTML =
+            '<div class="text-neutral-600 text-center py-8">Start typing to search...</div>'
+          statsContainer.textContent = ''
+          return
+        }
+        if (results.length === 0) {
+          resultsContainer.innerHTML =
+            '<div class="text-neutral-600 text-center py-8">No matches found</div>'
+          statsContainer.textContent = '0'
+          return
+        }
+        statsContainer.textContent = `${results.length} result${results.length !== 1 ? 's' : ''}`
+        resultsContainer.innerHTML = results
+          .map(
+            (result) => `
+        <div class="flex items-center justify-between px-3 py-2 bg-neutral-900 border border-neutral-800 rounded hover:border-neutral-700 transition-colors">
+          <div class="font-mono text-sm flex-1">${
+              highlightMatches(
+                result.path,
+                result.positions
+              )
+            }</div>
+          <div class="text-xs text-neutral-600 ml-4">
+            <span class="inline-block px-2 py-0.5 bg-neutral-800 rounded text-neutral-400">${
+              (
+                result.score * 100
+              ).toFixed(0)
+            }</span>
+          </div>
+        </div>
+      `
+          )
+          .join('')
+      }
+      searchInput.addEventListener('input', (e) => {
+        const query = e.target.value
+        const results = index.search(query, 20, { includePositions: true })
+        renderResults(results, query)
+      })
+      searchInput.focus()
+    </script>
+  </body>
+</html>
